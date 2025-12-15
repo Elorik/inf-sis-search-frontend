@@ -1,0 +1,10 @@
+{
+  "scripts": {
+    "dev:backend": "py -3 backend\\app.py",
+    "dev:frontend": "cd search-frontend && npm run dev",
+    "dev:all": "concurrently -k -n BACK,FRONT -c auto \"npm run dev:backend\" \"npm run dev:frontend\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
