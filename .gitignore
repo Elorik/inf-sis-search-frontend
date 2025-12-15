@@ -1,0 +1,7 @@
+venv/
+search-frontend/venv/
+node_modules/
+.vscode/
+**/__pycache__/
+*.pyc
+.DS_Store
