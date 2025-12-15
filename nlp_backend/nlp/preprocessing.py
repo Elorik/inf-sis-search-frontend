@@ -14,7 +14,7 @@ DEFAULT_STOPWORDS_UK = {
     "це", "цею", "цей", "він", "вона", "вони", "ми", "ви", "їх", "її", "року", "років"
 }
 
-RE_WORD = re.compile(r"[А-Яа-яЁёA-Za-z0-9\-']+", flags=re.UNICODE)
+RE_WORD = re.compile(r"\w+", flags=re.UNICODE)
 
 class Preprocessor:
     def __init__(self, lang: str = "uk"):

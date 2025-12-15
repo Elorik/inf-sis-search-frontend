@@ -2,8 +2,8 @@ from fastapi import FastAPI, Query
 from typing import List, Optional
 from pydantic import BaseModel
 import re
-from nlp_backend.nlp.interface import analyze_document
-from nlp_backend.search_engine.engine import engine, ParsedQuery
+from nlp.interface import analyze_document
+from search_engine.engine import engine, ParsedQuery
 from fastapi.middleware.cors import CORSMiddleware
 
 

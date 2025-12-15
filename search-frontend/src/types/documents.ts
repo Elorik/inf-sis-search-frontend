@@ -1,6 +1,7 @@
 import type { DocType, Entities } from "./search";
 
 export type NewDocumentPayload = {
+  id: string;
   title: string;
   body: string;
   source: string;

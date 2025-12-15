@@ -9,7 +9,6 @@ export type SearchParams = {
   query: string;
   doc_type?: string;
   entity_type?: string;
-  entity_value?: string;
 };
 
 export async function searchDocuments(
@@ -31,7 +30,6 @@ export async function searchDocuments(
   if (params.query) qs.set("q", params.query);
   if (params.doc_type) qs.set("doc_type", params.doc_type);
   if (params.entity_type) qs.set("entity_type", params.entity_type);
-  if (params.entity_value) qs.set("entity_value", params.entity_value);
 
   const url = `${BASE_URL}/search?${qs.toString()}`;
   const res = await fetch(url);

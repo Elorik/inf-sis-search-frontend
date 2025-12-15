@@ -1,4 +1,4 @@
-export type DocType = "news" | "opinion" | "scientific";
+export type DocType = "news" | "publicistic" | "scientific";
 
 export type EntityType = "PER" | "ORG" | "LOC" | "DATE";
 
