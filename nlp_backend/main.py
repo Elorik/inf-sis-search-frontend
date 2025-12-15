@@ -4,6 +4,7 @@ from pydantic import BaseModel
 import re
 from nlp_backend.nlp.interface import analyze_document
 from nlp_backend.search_engine.engine import engine, ParsedQuery
+from fastapi.middleware.cors import CORSMiddleware
 
 
 def classify_document(text: str) -> str:
@@ -96,7 +97,6 @@ class DocumentInput(BaseModel):
     date: str
 
 
-
 @app.get("/search", response_model=List[SearchResult])
 def search_documents(
     q: str = Query(..., min_length=1),
@@ -159,6 +159,14 @@ def add_document(doc: DocumentInput):
         "doc_type": doc_type,
         "tokens_count": len(tokens)
     }
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  # порт фронтенду
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 if __name__ == "__main__":
