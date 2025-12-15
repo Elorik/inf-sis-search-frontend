@@ -2,30 +2,42 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import { addDocument } from "../api/searchApi";
 import type { FullDocument } from "../types/documents";
+import { v4 as uuidv4 } from "uuid";
 
 function AdminPage() {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [source, setSource] = useState("");
   const [date, setDate] = useState("");
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [createdDoc, setCreatedDoc] = useState<FullDocument | null>(null);
 
-  async function handleSubmit(e: FormEvent) {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     setCreatedDoc(null);
 
     try {
-      const doc = await addDocument({
+      // Перетворюємо дату у формат YYYY-MM-DD
+      let isoDate = date.trim();
+      if (isoDate.includes(".")) {
+        const [day, month, year] = isoDate.split(".");
+        isoDate = `${year}-${month}-${day}`;
+      }
+
+      const payload = {
+        id: uuidv4(),
         title: title.trim(),
         body: body.trim(),
         source: source.trim(),
-        date: date.trim(),
-      });
+        date: isoDate,
+      };
+
+      console.log("Payload для бекенду:", payload);
+
+      const doc = await addDocument(payload);
 
       setCreatedDoc(doc);
       setTitle("");
@@ -33,17 +45,14 @@ function AdminPage() {
       setSource("");
       setDate("");
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Помилка додавання документа"
-      );
+      setError(err instanceof Error ? err.message : "Помилка додавання документа");
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   const isDisabled =
     loading || !title.trim() || !body.trim() || !source.trim() || !date.trim();
-
   return (
     <div style={{ maxWidth: 800, margin: "0 auto" }}>
       <h1 style={{ fontSize: "1.75rem", marginBottom: "1.5rem" }}>
