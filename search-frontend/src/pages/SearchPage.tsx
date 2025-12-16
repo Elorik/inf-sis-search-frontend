@@ -23,7 +23,6 @@ function SearchPage() {
   const [query, setQuery] = useState("");
   const [docType, setDocType] = useState("all");
   const [entityType, setEntityType] = useState("all");
-  const [entityValue, setEntityValue] = useState("");
 
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
@@ -38,7 +37,6 @@ function SearchPage() {
 
     if (docType !== "all") params.doc_type = docType;
     if (entityType !== "all") params.entity_type = entityType;
-    if (entityValue.trim() !== "") params.entity_value = entityValue.trim();
 
     try {
       const data = await searchDocuments(params);
@@ -163,33 +161,6 @@ function SearchPage() {
                 </option>
               ))}
             </select>
-          </div>
-
-          <div>
-            <label
-              style={{
-                display: "block",
-                marginBottom: "0.25rem",
-                fontWeight: 500,
-              }}
-            >
-              Значення сутності (опціонально)
-            </label>
-            <input
-              type="text"
-              value={entityValue}
-              onChange={(e) => setEntityValue(e.target.value)}
-              placeholder="Напр. Київ, Google, Іван…"
-              style={{
-                width: "100%",
-                padding: "0.5rem 0.75rem",
-                borderRadius: "0.5rem",
-                border: "1px solid var(--border)",
-                fontSize: "0.95rem",
-                backgroundColor: "var(--bg)",
-                color: "var(--text)",
-              }}
-            />
           </div>
         </div>
 

@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Query
-from typing import List, Optional
+from typing import List
 from pydantic import BaseModel
 import re
 from nlp.interface import analyze_document
@@ -29,33 +29,18 @@ def parse_query(raw_query: str) -> ParsedQuery:
     - фрази в лапках
     """
     raw_query = raw_query.strip()
-
-    # Фрази в лапках
     phrases = re.findall(r'"([^"]+)"', raw_query)
-
-    # Прибираємо фрази з основного рядка
     rest = re.sub(r'"[^"]+"', "", raw_query)
-
     tokens = []
-    operators = []
-
     for part in rest.split():
         up = part.upper()
-        if up in {"AND", "OR", "NOT"}:
-            operators.append(up)
-        else:
+        if up not in {"AND", "OR", "NOT"}:
             tokens.append(part.lower())
-
-    # Фрази додаємо як окремі токени
     tokens.extend([p.lower() for p in phrases])
-
     return ParsedQuery(query_text=raw_query, tokens=tokens)
 
-
 def generate_snippet(text: str, query_tokens: List[str], max_len: int = 160) -> str:
-    """
-    Генерація snippet на основі першого входження токена запиту
-    """
+
     if not text:
         return ""
 
@@ -66,19 +51,22 @@ def generate_snippet(text: str, query_tokens: List[str], max_len: int = 160) -> 
             start = max(0, pos - 50)
             end = min(len(text), pos + max_len)
             return "..." + text[start:end].replace("\n", " ") + "..."
-
     return text[:max_len].replace("\n", " ") + "..."
-
 
 app = FastAPI(title="Search Engine API")
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class EntityDict(BaseModel):
     PER: List[str] = []
     ORG: List[str] = []
     LOC: List[str] = []
     DATE: List[str] = []
-
 
 class SearchResult(BaseModel):
     id: str
@@ -87,7 +75,6 @@ class SearchResult(BaseModel):
     score: float
     doc_type: str
     entities: EntityDict
-
 
 class DocumentInput(BaseModel):
     id: str
@@ -103,42 +90,26 @@ def search_documents(
     doc_type: str = Query("all", enum=["all", "news", "publicistic", "scientific"]),
     entity_type: str = Query("all", enum=["all", "PER", "ORG", "LOC", "DATE"])
 ):
-    # 1. Парсинг запиту
-    parsed_query = parse_query(q)
 
-    # 2. Пошук
+
+    parsed_query = parse_query(q)
     raw_results = engine.search(parsed_query, doc_type, entity_type)
 
-    # 3. Додавання snippet
     final_results = []
     for res in raw_results:
         full_doc = engine.get_document(res["id"])
         if full_doc:
-            res["snippet"] = generate_snippet(
-                full_doc.get("body", ""),
-                parsed_query.tokens
-            )
+            res["snippet"] = generate_snippet(full_doc.get("body", ""), parsed_query.tokens)
         final_results.append(res)
-
     return final_results
 
 
 @app.post("/admin/documents")
 def add_document(doc: DocumentInput):
-    """
-    Адмінський ендпоінт для додавання документа.
-    Тут:
-    - NLP-аналіз
-    - автоматична класифікація
-    - індексація
-    """
-    # NLP-аналіз
+    # Аналіз та збереження
     tokens, entities = analyze_document(doc.title, doc.body)
-
-    # Автоматична класифікація
     doc_type = classify_document(doc.title + " " + doc.body)
 
-    # Формування повного документа
     doc_dict = {
         "id": doc.id,
         "title": doc.title,
@@ -150,23 +121,23 @@ def add_document(doc: DocumentInput):
         "entities": entities
     }
 
-    # Індексація
     engine.add_document(doc_dict)
 
     return {
         "status": "indexed",
         "id": doc.id,
-        "doc_type": doc_type,
-        "tokens_count": len(tokens)
+        "file_saved_to": str(engine.db_path)
     }
 
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # порт фронтенду
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+@app.get("/admin/db-dump")
+def get_database_dump():
+    return {
+        "status": "ok",
+        "db_path": str(engine.db_path),
+        "documents_count": len(engine.documents),
+        "documents": engine.documents
+    }
 
 
 if __name__ == "__main__":
