@@ -7,7 +7,7 @@ import { SearchResultCard } from "../components/SearchResultCard";
 const DOC_TYPE_OPTIONS = [
   { value: "all", label: "Усі типи" },
   { value: "news", label: "Новини" },
-  { value: "opinion", label: "Публіцистика" },
+  { value: "publicistic", label: "Публіцистика" },
   { value: "scientific", label: "Наукові" },
 ];
 
