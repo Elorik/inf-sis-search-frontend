@@ -126,6 +126,8 @@ def add_document(doc: DocumentInput):
     return {
         "status": "indexed",
         "id": doc.id,
+        "title": doc.title,
+        "doc_type": doc_type,
         "file_saved_to": str(engine.db_path)
     }
 
